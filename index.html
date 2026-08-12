@@ -14,15 +14,13 @@
     <style>
         body { 
             font-family: 'Outfit', sans-serif; 
-            background-color: #050505; /* Solid dark background */
+            background-color: #050505; 
             color: #f8fafc; 
         }
 
-        /* Hilangkan scrollbar bawaan untuk area riwayat ronde (mobile friendly) */
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Animasi muncul (Fade Up) */
         @keyframes fadeUp {
             0% { opacity: 0; transform: translateY(15px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -37,7 +35,6 @@
 
     <!-- HEADER / BANNER -->
     <header class="relative w-full h-[220px] flex flex-col items-center justify-center">
-        <!-- Banner Image -->
         <div class="absolute inset-0 z-0">
             <img src="https://www.image2url.com/r2/default/images/1786552840470-924cd946-d86c-4dee-8a31-954207d27876.png" 
                  alt="Banner GLW GODDOG" 
@@ -45,7 +42,6 @@
             <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
         </div>
         
-        <!-- Header Text -->
         <div class="relative z-10 text-center mt-6">
             <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest drop-shadow-lg">
                 GODDOG
@@ -63,45 +59,36 @@
     <!-- KONTEN UTAMA -->
     <main class="relative z-20 max-w-[600px] mx-auto px-4 sm:px-6">
         
-        <!-- Divider & Info Leaderboard -->
+        <!-- Header Info & TOTAL REWARD GLOBAL -->
         <div class="border-b-2 border-slate-800 pb-3 mb-5 flex justify-between items-end">
-            <h2 class="text-lg font-bold tracking-widest text-slate-200">LEADERBOARD</h2>
+            <div>
+                <h2 class="text-lg font-bold tracking-widest text-slate-200">LEADERBOARD</h2>
+                <!-- UI TOTAL REWARD GLOBAL DI SINI -->
+                <p id="global-reward" class="text-[11px] font-bold text-amber-500 tracking-widest mt-1">TOTAL PAYOUT: MENGHITUNG...</p>
+            </div>
             <span id="player-count" class="text-xs font-bold text-slate-500 tracking-wider">MEMUAT...</span>
         </div>
 
-        <!-- List Data Container -->
         <div id="player-list" class="flex flex-col gap-4">
-            
             <!-- Loading Indicator -->
             <div class="py-10 text-center" id="loading-state">
                 <div class="w-8 h-8 border-4 border-slate-700 border-t-slate-300 rounded-full animate-spin mx-auto mb-3"></div>
                 <p class="text-slate-400 text-xs font-medium animate-pulse tracking-widest">SINKRONISASI DATA...</p>
             </div>
-
         </div>
 
     </main>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Formatter Uang Rupiah (Rp)
         const formatRupiah = (number) => {
             return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
+                style: 'currency', currency: 'IDR', minimumFractionDigits: 0
             }).format(number);
         };
+        const formatNumber = (number) => new Intl.NumberFormat('id-ID').format(number);
 
-        // Formatter Angka (Contoh: 1250 -> 1.250)
-        const formatNumber = (number) => {
-            return new Intl.NumberFormat('id-ID').format(number);
-        };
-
-        // Mengambil data dari data.json
-        // (Catatan: Jika web sudah di-upload ke GitHub, Anda bisa ubah menjadi fetch('data.json?v=' + Date.now()) agar tidak kena cache)
-        fetch('data.json')
+        fetch('data.json?v=' + Date.now())
             .then(response => {
                 if (!response.ok) throw new Error("Gagal memuat data");
                 return response.json();
@@ -109,84 +96,104 @@
             .then(data => {
                 const container = document.getElementById('player-list');
                 const countText = document.getElementById('player-count');
+                const globalRewardText = document.getElementById('global-reward');
                 
-                // Menghitung total poin dan hadiah untuk setiap player
+                let globalTotalReward = 0; // Menyimpan total reward semua player
+
+                // Memproses data dengan logika pembulatan PER RONDE
                 let players = data.map(player => {
-                    const totalPoints = player.rounds.reduce((acc, curr) => acc + curr, 0);
-                    const totalReward = Math.floor(totalPoints / 100) * 5000;
-                    return { ...player, totalPoints, totalReward };
+                    let totalRealPoints = 0;
+                    let totalReward = 0;
+
+                    // Hitung poin tiap ronde secara spesifik
+                    let processedRounds = player.rounds.map(pts => {
+                        totalRealPoints += pts;
+
+                        // LOGIKA PEMBULATAN (Threshold 80)
+                        let ratusan = Math.floor(pts / 100) * 100;
+                        let sisa = pts % 100;
+                        
+                        // Jika sisa >= 80, naikkan ke ratusan selanjutnya (cth: 180 -> 200)
+                        let poinBulat = (sisa >= 80) ? (ratusan + 100) : ratusan;
+                        
+                        // Konversi poin bulat ke reward (Rp5000 per 100 poin)
+                        let roundReward = (poinBulat / 100) * 5000;
+                        
+                        totalReward += roundReward;
+
+                        return { real: pts, reward: roundReward };
+                    });
+
+                    // Tambahkan ke total keseluruhan global
+                    globalTotalReward += totalReward;
+
+                    return { ...player, totalRealPoints, totalReward, processedRounds };
                 });
 
-                // SORTING OTOMATIS: Dari Poin Tertinggi ke Terendah
-                players.sort((a, b) => b.totalPoints - a.totalPoints);
+                // SORTING berdasarkan total hadiah (atau total poin asli)
+                players.sort((a, b) => b.totalRealPoints - a.totalRealPoints);
 
-                // Update teks jumlah player
+                // Update UI Header
                 countText.innerText = `${players.length} PLAYERS`;
+                globalRewardText.innerText = `TOTAL PAYOUT: ${formatRupiah(globalTotalReward)}`;
                 
-                // Kosongkan loading icon
                 container.innerHTML = ''; 
 
-                // Render UI untuk setiap Player
+                // Render Kartu Player
                 players.forEach((player, index) => {
-                    // Logika Medali untuk Top 3
-                    let medal = '';
-                    if (index === 0) medal = '🥇';
-                    else if (index === 1) medal = '🥈';
-                    else if (index === 2) medal = '🥉';
-
-                    // Format nomor urut (01, 02, dst)
+                    let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                     const rankNum = String(index + 1).padStart(2, '0');
 
-                    // UI Kotak Ronde (R1, R2, dst)
-                    const roundsHtml = player.rounds.map((pts, i) => `
+                    // UI Kotak Ronde menampilkan Poin & Reward (misal: 180 | 10k)
+                    const roundsHtml = player.processedRounds.map((r, i) => `
                         <div class="flex flex-col items-center flex-shrink-0 w-12">
-                            <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider mb-1">[R${i + 1}]</span>
-                            <span class="text-sm font-bold text-slate-100">${pts}</span>
+                            <span class="bg-slate-800 text-slate-300 w-full text-center py-0.5 rounded-t text-[9px] font-bold tracking-wider">[R${i + 1}]</span>
+                            <span class="text-sm font-bold text-slate-100 py-1">${r.real}</span>
+                            <span class="bg-slate-900 w-full text-center text-[8px] font-bold text-emerald-400 py-0.5 rounded-b border-t border-slate-800">
+                                ${r.reward > 0 ? (r.reward / 1000) + 'k' : '0'}
+                            </span>
                         </div>
                     `).join('');
 
-                    // Buat Elemen Card
                     const card = document.createElement('div');
                     card.className = `bg-[#0a0a0a] border border-slate-800 rounded-xl p-4 shadow-xl animate-card`;
                     card.style.animationDelay = `${index * 80}ms`;
 
-                    // Layout Flexbox untuk presisi text
                     card.innerHTML = `
-                        <!-- Rank & Total Point -->
+                        <!-- Rank & Total Point Asli -->
                         <div class="flex justify-between items-end mb-1">
                             <div class="text-lg font-bold text-white tracking-wide">
                                 ${medal} <span class="text-slate-400">#${rankNum}</span>
                             </div>
                             <div class="text-2xl font-black text-white tracking-tight leading-none">
-                                ${formatNumber(player.totalPoints)}
+                                ${formatNumber(player.totalRealPoints)}
                             </div>
                         </div>
 
-                        <!-- Username & Label PT -->
+                        <!-- Username -->
                         <div class="flex justify-between items-start mb-5">
                             <div class="text-sm font-medium text-slate-400 ml-1 truncate max-w-[70%]">
                                 ${player.username}
                             </div>
                             <div class="text-[10px] font-bold text-emerald-500 tracking-widest mt-0.5">
-                                PT
+                                PT REAL
                             </div>
                         </div>
 
-                        <!-- Rounds Section -->
+                        <!-- Rounds Details -->
                         <div class="mb-4">
-                            <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS</p>
+                            <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS & REWARD</p>
                             <div class="flex gap-2 overflow-x-auto hide-scroll snap-x pb-2">
                                 ${roundsHtml}
-                                ${player.rounds.length > 5 ? `<div class="flex items-center text-slate-600 text-sm ml-2">→</div>` : ''}
+                                ${player.processedRounds.length > 5 ? `<div class="flex items-center text-slate-600 text-sm ml-2">→</div>` : ''}
                             </div>
                         </div>
 
-                        <!-- Divider -->
                         <hr class="border-slate-800 mb-3">
 
-                        <!-- Reward Section -->
+                        <!-- Final Reward -->
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold tracking-widest text-slate-400">REWARD</span>
+                            <span class="text-xs font-bold tracking-widest text-slate-400">TOTAL REWARD</span>
                             <div class="flex items-center gap-3">
                                 <span class="font-black text-amber-400 text-lg tracking-wide">${formatRupiah(player.totalReward)}</span>
                                 <img src="https://www.image2url.com/r2/default/images/1786552576749-6570b46a-b8a5-4cfe-859c-b36e5f687885.jpg" 
@@ -195,7 +202,6 @@
                             </div>
                         </div>
                     `;
-                    
                     container.appendChild(card);
                 });
             })
@@ -203,7 +209,7 @@
                 document.getElementById('player-list').innerHTML = `
                     <div class="bg-red-950/20 border border-red-900/50 text-red-400 p-4 rounded-xl text-center">
                         <p class="text-sm font-bold tracking-wider mb-1">GAGAL MENGAMBIL DATA</p>
-                        <p class="text-[10px] opacity-70">Pastikan Anda tidak membuka file HTML ini secara offline (klik dua kali). Upload ke GitHub Pages atau gunakan VS Code Live Server.</p>
+                        <p class="text-[10px] opacity-70">Pastikan file data.json ada dan web dihosting (GitHub Pages).</p>
                     </div>
                 `;
             });
