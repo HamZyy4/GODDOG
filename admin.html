@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GODDOG - Admin Panel</title>
+    <title>GODDOG - Admin Panel API</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,32 +13,45 @@
         body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #f8fafc; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animasi untuk Notifikasi Toast */
+        @keyframes slideInRight {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOutUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-exit { animation: fadeOutUp 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
 
+    <!-- Container untuk Notifikasi (Toast) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none w-72"></div>
+
     <!-- ================= LOGIN SCREEN ================= -->
-    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/90 backdrop-blur-md px-4">
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/95 backdrop-blur-md px-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 w-full max-w-sm shadow-2xl">
             <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/30">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h1 class="text-2xl font-black text-white tracking-widest">GODDOG ADMIN</h1>
-                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen JSON</p>
+                <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">Sistem API Auto-Update</p>
             </div>
             
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 tracking-widest mb-1">USERNAME</label>
-                    <input type="text" id="username" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors" placeholder="Masukkan Username" autocomplete="off">
+                    <input type="text" id="username" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Username (AdmGod)" autocomplete="off">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 tracking-widest mb-1">PASSWORD</label>
-                    <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors" placeholder="Masukkan Password">
+                    <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Password (GODDOG)">
                 </div>
-                <p id="login-error" class="text-xs text-red-500 font-medium hidden">Username atau Password salah!</p>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-2.5 rounded-lg transition-colors mt-2">
+                <p id="login-error" class="text-xs text-red-500 font-medium hidden text-center">Username atau Password salah!</p>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-2.5 rounded-lg transition-colors mt-2 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
                     LOGIN SISTEM
                 </button>
             </form>
@@ -52,34 +65,40 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
             <div>
                 <h2 class="text-2xl font-black tracking-widest text-white">PANEL KONTROL</h2>
-                <p class="text-xs font-bold text-cyan-500 tracking-wider">MODE EDITOR JSON</p>
+                <div class="flex items-center gap-2 mt-1 bg-slate-900/50 px-2 py-1 rounded-md border border-slate-800 inline-flex">
+                    <span id="api-status" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <p id="api-status-text" class="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Menghubungkan...</p>
+                </div>
             </div>
-            <button onclick="downloadJSON()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                UNDUH DATA.JSON
+            
+            <!-- Tombol Push to Github -->
+            <button id="btn-save-github" onclick="pushToGitHub()" class="bg-slate-800 text-slate-400 text-sm font-bold px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all opacity-50 cursor-not-allowed border border-slate-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                SIMPAN & UPDATE
             </button>
         </div>
 
-        <!-- Info Card -->
-        <div class="bg-cyan-950/20 border border-cyan-900/50 rounded-xl p-4 mb-6 text-sm text-slate-300">
-            <span class="font-bold text-cyan-400">INFO PENTING:</span> Karena web ini di-hosting secara statis, setelah Anda menambah poin/player, wajib klik tombol <span class="font-bold text-emerald-400">"UNDUH DATA.JSON"</span> lalu upload file tersebut ke GitHub Anda untuk menimpa file yang lama.
-        </div>
-
-        <!-- Add New Player -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-8">
-            <label class="block text-[10px] font-bold text-slate-400 tracking-widest mb-2">TAMBAH PLAYER BARU</label>
-            <div class="flex gap-2">
-                <input type="text" id="new-player-name" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Nama Player...">
-                <button onclick="addNewPlayer()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap">
+        <!-- Add New Player Panel -->
+        <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-2xl p-5 mb-8 shadow-lg relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
+            <label class="block text-[10px] font-bold text-cyan-400 tracking-widest mb-3 relative z-10 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                TAMBAH PLAYER BARU
+            </label>
+            <div class="flex gap-2 relative z-10">
+                <input type="text" id="new-player-name" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 shadow-inner" placeholder="Masukkan Nama Player...">
+                <button onclick="addNewPlayer()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all text-sm shadow-[0_0_10px_rgba(8,145,178,0.3)] whitespace-nowrap">
                     TAMBAH
                 </button>
             </div>
         </div>
 
         <!-- Player List -->
-        <div class="mb-2">
-            <h3 class="text-sm font-bold tracking-widest text-slate-400 mb-3">DATA PLAYER SAAT INI</h3>
+        <div class="mb-3 flex justify-between items-end border-b border-slate-800 pb-2">
+            <h3 class="text-sm font-bold tracking-widest text-slate-400">DATA PLAYER SAAT INI</h3>
+            <span id="player-count-badge" class="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded">0 PLAYER</span>
         </div>
+        
         <div id="admin-player-list" class="flex flex-col gap-4">
             <!-- Player cards will be injected here -->
         </div>
@@ -88,88 +107,187 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        let appData = []; // Menyimpan data JSON secara lokal
+        // ================= KONFIGURASI HARCODED =================
+        const ghConfig = {
+            owner: 'HamZyy4',
+            repo: 'GODDOG',
+            token: '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'
+        };
+
+        let appData = [];
+        let fileSha = ''; 
+
+        // --- SISTEM NOTIFIKASI TOAST ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Konfigurasi Warna berdasarkan tipe
+            let bgColor, borderColor, iconHtml;
+            if (type === 'success') {
+                bgColor = 'bg-emerald-950/80';
+                borderColor = 'border-emerald-500/50';
+                iconHtml = `<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            } else if (type === 'error') {
+                bgColor = 'bg-red-950/80';
+                borderColor = 'border-red-500/50';
+                iconHtml = `<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            } else {
+                bgColor = 'bg-cyan-950/80';
+                borderColor = 'border-cyan-500/50';
+                iconHtml = `<svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+            }
+
+            toast.className = `toast-enter flex items-center gap-3 ${bgColor} border ${borderColor} backdrop-blur-md rounded-xl p-3 shadow-lg`;
+            toast.innerHTML = `
+                ${iconHtml}
+                <p class="text-xs font-bold text-white tracking-wide">${message}</p>
+            `;
+            
+            container.appendChild(toast);
+
+            // Hapus otomatis setelah 3 detik
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(() => toast.remove(), 300); // Tunggu animasi exit selesai
+            }, 3000);
+        }
 
         // --- SISTEM LOGIN ---
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
-            const errorText = document.getElementById('login-error');
-
+            
             if (user === 'AdmGod' && pass === 'GODDOG') {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
-                initData(); // Mulai ambil data jika login berhasil
+                showToast('Login Berhasil!', 'success');
+                checkGithubConnection(); // Otomatis jalan
             } else {
-                errorText.classList.remove('hidden');
+                document.getElementById('login-error').classList.remove('hidden');
             }
         });
 
-        // --- AMBIL DATA JSON ---
-        function initData() {
-            // Mencoba mengambil data dari data.json yang sudah ada di server
-            fetch('data.json?v=' + Date.now())
-                .then(response => {
-                    if (!response.ok) throw new Error("Gagal");
-                    return response.json();
+        // --- CEK KONEKSI & AMBIL DATA DARI GITHUB API ---
+        function checkGithubConnection() {
+            document.getElementById('admin-player-list').innerHTML = `<div class="text-center py-10"><div class="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div><p class="text-[10px] text-slate-400 font-bold tracking-widest">MENGUNDUH DATA JSON...</p></div>`;
+
+            fetch(`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/data.json`, {
+                headers: {
+                    'Authorization': `token ${ghConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                cache: "no-store"
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Gagal mengambil data dari GitHub.");
+                return response.json();
+            })
+            .then(data => {
+                fileSha = data.sha;
+                
+                // Decode Data Base64
+                const decodedData = decodeURIComponent(escape(atob(data.content)));
+                appData = JSON.parse(decodedData);
+                
+                // Update UI Status
+                document.getElementById('api-status').classList.replace('bg-red-500', 'bg-emerald-500');
+                document.getElementById('api-status').classList.remove('animate-pulse');
+                document.getElementById('api-status-text').innerText = "TERHUBUNG KE GITHUB";
+                document.getElementById('api-status-text').classList.replace('text-slate-400', 'text-emerald-400');
+                
+                // Aktifkan Tombol Simpan
+                const btnSave = document.getElementById('btn-save-github');
+                btnSave.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-800', 'text-slate-400', 'border-slate-700');
+                btnSave.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white', 'shadow-[0_0_15px_rgba(16,185,129,0.3)]', 'border-emerald-500');
+                
+                showToast('Data JSON berhasil dimuat', 'info');
+                renderAdminUI();
+            })
+            .catch(error => {
+                showToast('Gagal terhubung ke Repo!', 'error');
+                document.getElementById('admin-player-list').innerHTML = `<p class="text-center text-red-500 py-6 text-sm font-bold">Koneksi Gagal. Cek API Key Anda.</p>`;
+            });
+        }
+
+        // --- PUSH/UPDATE DATA KE GITHUB API ---
+        function pushToGitHub() {
+            if (!fileSha || !ghConfig.token) return;
+            
+            const btnSave = document.getElementById('btn-save-github');
+            btnSave.innerHTML = `<div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div> PROSES...`;
+            
+            const updatedJsonData = JSON.stringify(appData, null, 2);
+            const encodedData = btoa(unescape(encodeURIComponent(updatedJsonData)));
+
+            fetch(`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/data.json`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${ghConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Update Leaderboard Points",
+                    content: encodedData,
+                    sha: fileSha 
                 })
-                .then(data => {
-                    appData = data;
-                    renderAdminUI();
-                })
-                .catch(error => {
-                    // Jika data.json belum ada, siapkan array kosong
-                    alert("File data.json belum ditemukan atau kosong. Mulai dengan data baru.");
-                    appData = [];
-                    renderAdminUI();
-                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.content && data.content.sha) {
+                    fileSha = data.content.sha; 
+                    showToast('Update Server Berhasil!', 'success');
+                } else {
+                    showToast('Gagal menyimpan data!', 'error');
+                }
+            })
+            .catch(error => showToast('Terjadi kesalahan jaringan', 'error'))
+            .finally(() => {
+                btnSave.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg> SIMPAN & UPDATE`;
+            });
         }
 
         // --- RENDER UI ADMIN ---
         function renderAdminUI() {
             const container = document.getElementById('admin-player-list');
+            document.getElementById('player-count-badge').innerText = `${appData.length} PLAYER`;
             container.innerHTML = '';
 
-            if (appData.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-500 py-4 text-sm">Belum ada data player.</p>`;
-                return;
-            }
-
             appData.forEach((player, playerIndex) => {
-                // Render List Ronde
                 const roundsHtml = player.rounds.map((pts, roundIndex) => `
-                    <div class="flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-md px-2 py-1 relative group">
-                        <span class="text-[9px] font-bold text-slate-500">R${roundIndex + 1}:</span>
+                    <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-1.5 group hover:border-red-500/50 transition-colors">
+                        <span class="text-[10px] font-bold text-slate-500">R${roundIndex + 1}:</span>
                         <span class="text-sm font-black text-slate-200">${pts}</span>
-                        <!-- Tombol Hapus Ronde (Muncul saat dihover/diklik) -->
-                        <button onclick="removeRound(${playerIndex}, ${roundIndex})" class="ml-2 text-red-500 hover:text-red-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <button onclick="removeRound(${playerIndex}, ${roundIndex})" class="ml-1 text-slate-600 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                     </div>
                 `).join('');
 
                 const card = document.createElement('div');
-                card.className = "bg-slate-900/80 border border-slate-800 rounded-xl p-4";
+                card.className = "bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-4 md:p-5 hover:border-slate-700 transition-colors";
                 
                 card.innerHTML = `
-                    <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
-                        <h3 class="font-bold text-slate-100 text-lg">${player.username}</h3>
-                        <button onclick="deletePlayer(${playerIndex})" class="text-[10px] font-bold bg-red-950/50 text-red-400 border border-red-900/50 px-2 py-1 rounded hover:bg-red-900/50 transition-colors">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-800/80 pb-3">
+                        <h3 class="font-black text-slate-100 text-lg tracking-wide">${player.username}</h3>
+                        <button onclick="deletePlayer(${playerIndex})" class="text-[10px] font-bold bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg hover:bg-red-900/60 transition-colors flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             HAPUS PLAYER
                         </button>
                     </div>
                     
-                    <div class="mb-3">
-                        <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-1.5">DATA RONDE:</p>
+                    <div class="mb-4">
+                        <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2 uppercase">Riwayat Ronde:</p>
                         <div class="flex flex-wrap gap-2">
-                            ${roundsHtml || '<span class="text-xs text-slate-600">Belum ada poin ronde</span>'}
+                            ${roundsHtml || '<span class="text-[11px] font-medium text-slate-600 italic bg-slate-950 px-3 py-1 rounded-lg">Belum ada poin tercatat</span>'}
                         </div>
                     </div>
 
-                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-800">
-                        <input type="number" id="input-pts-${playerIndex}" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Poin">
-                        <button onclick="addRound(${playerIndex})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-3 py-1 rounded-lg transition-colors text-xs whitespace-nowrap">
+                    <div class="flex gap-2 mt-4 pt-4 border-t border-slate-800/80">
+                        <input type="number" id="input-pts-${playerIndex}" class="w-24 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 text-center" placeholder="Poin">
+                        <button onclick="addRound(${playerIndex})" class="bg-emerald-900/30 hover:bg-emerald-800/50 text-emerald-400 border border-emerald-800 font-bold px-4 py-2 rounded-xl transition-colors text-xs tracking-wider flex-1 md:flex-none">
                             + TAMBAH POIN
                         </button>
                     </div>
@@ -178,69 +296,47 @@
             });
         }
 
-        // --- FUNGSI TAMBAH PLAYER ---
+        // --- FUNGSI AKSI ADMIN ---
         function addNewPlayer() {
             const nameInput = document.getElementById('new-player-name');
             const name = nameInput.value.trim();
-            if (name === '') return alert('Nama tidak boleh kosong!');
+            if (name === '') return showToast('Nama tidak boleh kosong!', 'error');
+            if (appData.find(p => p.username.toLowerCase() === name.toLowerCase())) return showToast('Player sudah ada!', 'error');
             
-            // Cek duplikat
-            if (appData.find(p => p.username.toLowerCase() === name.toLowerCase())) {
-                return alert('Player dengan nama tersebut sudah ada!');
-            }
-
             appData.push({ username: name, rounds: [] });
-            nameInput.value = ''; // Kosongkan input
-            renderAdminUI(); // Refresh UI
+            nameInput.value = ''; 
+            renderAdminUI(); 
+            showToast(`Player ${name} ditambahkan`, 'success');
         }
 
-        // --- FUNGSI HAPUS PLAYER ---
         function deletePlayer(index) {
-            if(confirm(`Yakin ingin menghapus player ${appData[index].username}?`)) {
+            const name = appData[index].username;
+            if(confirm(`Yakin ingin menghapus ${name} secara permanen?`)) {
                 appData.splice(index, 1);
                 renderAdminUI();
+                showToast(`Player ${name} dihapus`, 'error');
             }
         }
 
-        // --- FUNGSI TAMBAH POIN RONDE ---
         function addRound(playerIndex) {
             const inputElement = document.getElementById(`input-pts-${playerIndex}`);
             const pts = parseInt(inputElement.value);
-            
-            if (isNaN(pts)) return alert('Masukkan angka poin yang valid!');
-            if (pts < 0) return alert('Poin tidak boleh minus!');
+            const name = appData[playerIndex].username;
 
+            if (isNaN(pts) || pts < 0) return showToast('Masukkan angka poin valid!', 'error');
+            
             appData[playerIndex].rounds.push(pts);
+            inputElement.value = '';
             renderAdminUI();
+            showToast(`+${pts} Poin ditambahkan untuk ${name}`, 'success');
         }
 
-        // --- FUNGSI HAPUS POIN RONDE ---
         function removeRound(playerIndex, roundIndex) {
-            if(confirm(`Hapus poin ronde ke-${roundIndex + 1} untuk ${appData[playerIndex].username}?`)) {
+            if(confirm(`Hapus poin ronde ke-${roundIndex + 1}?`)) {
                 appData[playerIndex].rounds.splice(roundIndex, 1);
                 renderAdminUI();
+                showToast(`Poin Ronde Dihapus`, 'error');
             }
-        }
-
-        // --- FUNGSI UNDUH (DOWNLOAD) JSON ---
-        function downloadJSON() {
-            // Ubah array appData menjadi format string JSON yang rapi
-            const dataStr = JSON.stringify(appData, null, 2);
-            
-            // Buat Blob (file virtual)
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            // Buat elemen link sementara untuk men-trigger download
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'data.json'; // Nama file yang akan didownload
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url); // Bersihkan memori
-
-            alert("File data.json berhasil diunduh! Silakan upload file tersebut ke Repository GitHub Anda untuk memperbarui Leaderboard.");
         }
     </script>
 </body>
