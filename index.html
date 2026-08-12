@@ -1,91 +1,90 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta Viewport: Kunci utama agar tampilan tidak zoom/rusak di HP -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GLW - GODDOG Leaderboard</title>
+    <title>GODDOG - Reward Leaderboard</title>
     
-    <!-- Tailwind CSS (Framework UI) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Outfit (Font bernuansa modern/gaming) -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         body { 
             font-family: 'Outfit', sans-serif; 
-            background-color: #020617; /* Background gelap solid (Slate 950) */
+            background-color: #050505; /* Solid dark background */
             color: #f8fafc; 
         }
-        
-        /* Animasi muncul dari bawah ke atas */
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-card {
-            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
 
-        /* Menyembunyikan scrollbar di area 'Ronde' tapi tetap bisa di-swipe di HP */
+        /* Hilangkan scrollbar bawaan untuk area riwayat ronde (mobile friendly) */
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animasi muncul (Fade Up) */
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-card {
+            animation: fadeUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden selection:bg-emerald-500 selection:text-white">
+<body class="min-h-screen relative overflow-x-hidden selection:bg-cyan-500 selection:text-white pb-10">
 
-    <!-- Efek Cahaya Latar (Glow) di bagian atas -->
-    <div class="fixed top-0 inset-x-0 h-[400px] bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none -z-10"></div>
-
-    <!-- HEADER / BANNER (Dioptimalkan untuk Mobile Vertical) -->
-    <header class="relative w-full h-[250px] md:h-[300px] flex items-center justify-center pt-6">
-        <!-- Background Banner -->
+    <!-- HEADER / BANNER -->
+    <header class="relative w-full h-[220px] flex flex-col items-center justify-center">
+        <!-- Banner Image -->
         <div class="absolute inset-0 z-0">
             <img src="https://www.image2url.com/r2/default/images/1786552840470-924cd946-d86c-4dee-8a31-954207d27876.png" 
                  alt="Banner GLW GODDOG" 
-                 class="w-full h-full object-cover object-center opacity-70 mix-blend-screen">
-            <!-- Gradasi dari gambar ke warna background web agar menyatu mulus -->
-            <div class="absolute inset-0 bg-gradient-to-b from-[#020617]/50 via-[#020617]/70 to-[#020617]"></div>
+                 class="w-full h-full object-cover object-top opacity-50 mix-blend-screen">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
         </div>
         
-        <!-- Box Judul (Glassmorphism) -->
-        <div class="relative z-10 w-[92%] max-w-sm md:max-w-md bg-slate-900/50 backdrop-blur-md border border-white/10 rounded-2xl p-5 text-center shadow-2xl mt-4">
-            <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 tracking-tight mb-1 drop-shadow-lg">
-                GLW - GODDOG
+        <!-- Header Text (Sesuai Referensi) -->
+        <div class="relative z-10 text-center mt-6">
+            <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest drop-shadow-lg">
+                GODDOG
             </h1>
-            <p class="text-slate-300 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase">
-                Reward Leaderboard
+            <p class="text-slate-300 text-xs md:text-sm font-semibold tracking-[0.3em] mt-1 mb-3">
+                REWARD LEADERBOARD
             </p>
-            
-            <!-- Indikator Status -->
-            <div class="mt-4 inline-flex items-center gap-2 bg-slate-950/60 px-3 py-1.5 rounded-full border border-slate-700/50 shadow-inner">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
-                <span class="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">Live Data</span>
+            <div class="inline-flex items-center gap-2 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/30">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-[10px] text-red-100 font-bold tracking-widest">LIVE</span>
             </div>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA (List Player) -->
-    <main class="relative z-20 max-w-[1000px] mx-auto px-4 pb-20 -mt-2">
+    <!-- KONTEN UTAMA -->
+    <main class="relative z-20 max-w-[600px] mx-auto px-4 sm:px-6">
         
-        <!-- Grid List Container -->
-        <div id="player-list" class="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
+        <!-- Divider & Info Leaderboard -->
+        <div class="border-b-2 border-slate-800 pb-3 mb-5 flex justify-between items-end">
+            <h2 class="text-lg font-bold tracking-widest text-slate-200">LEADERBOARD</h2>
+            <span id="player-count" class="text-xs font-bold text-slate-500 tracking-wider">MEMUAT...</span>
+        </div>
+
+        <!-- List Data Container -->
+        <div id="player-list" class="flex flex-col gap-4">
             
-            <!-- Tampilan Loading Animasi -->
-            <div class="col-span-full py-16 text-center" id="loading-state">
-                <div class="w-10 h-10 border-4 border-slate-700 border-t-cyan-500 rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-slate-400 text-sm font-medium animate-pulse">Menghubungkan ke data JSON...</p>
+            <!-- Loading Indicator -->
+            <div class="py-10 text-center" id="loading-state">
+                <div class="w-8 h-8 border-4 border-slate-700 border-t-slate-300 rounded-full animate-spin mx-auto mb-3"></div>
+                <p class="text-slate-400 text-xs font-medium animate-pulse tracking-widest">SINKRONISASI DATA...</p>
             </div>
 
         </div>
+
     </main>
 
-    <!-- LOGIKA JAVASCRIPT -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Fungsi untuk format mata uang Rupiah
+        // Formatter Uang Rupiah (Rp)
         const formatRupiah = (number) => {
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
@@ -95,82 +94,105 @@
             }).format(number);
         };
 
-        // Mengambil data dari data.json
-        fetch('data.json')
+        // Formatter Angka (Contoh: 1250 -> 1.250)
+        const formatNumber = (number) => {
+            return new Intl.NumberFormat('id-ID').format(number);
+        };
+
+        // Mengambil data dari data.json (menggunakan parameter tanggal agar tidak ter-cache di GitHub)
+        fetch('data.json?v=' + new Date().getTime())
             .then(response => {
                 if (!response.ok) throw new Error("Gagal memuat data");
                 return response.json();
             })
             .then(data => {
                 const container = document.getElementById('player-list');
-                container.innerHTML = ''; // Menghapus ikon loading
-
-                data.forEach((player, index) => {
-                    // 1. Kalkulasi Total Poin
+                const countText = document.getElementById('player-count');
+                
+                // Menghitung total poin setiap player dan memasukkannya ke dalam objek baru
+                let players = data.map(player => {
                     const totalPoints = player.rounds.reduce((acc, curr) => acc + curr, 0);
-                    // 2. Kalkulasi Reward (Rp 5.000 per 100 Poin)
                     const totalReward = Math.floor(totalPoints / 100) * 5000;
-                    
-                    // 3. Membuat UI Kotak (Pills) untuk riwayat ronde
+                    return { ...player, totalPoints, totalReward };
+                });
+
+                // SORTING: Mengurutkan player berdasarkan poin tertinggi ke terendah
+                players.sort((a, b) => b.totalPoints - a.totalPoints);
+
+                // Update jumlah player
+                countText.innerText = `${players.length} PLAYERS`;
+                
+                // Kosongkan container dari loading icon
+                container.innerHTML = ''; 
+
+                // Render HTML per Player
+                players.forEach((player, index) => {
+                    // Logika Medali untuk Top 3
+                    let medal = '';
+                    if (index === 0) medal = '🥇';
+                    else if (index === 1) medal = '🥈';
+                    else if (index === 2) medal = '🥉';
+
+                    // Format nomor urut (01, 02, dst)
+                    const rankNum = String(index + 1).padStart(2, '0');
+
+                    // UI Kotak Ronde (R1, R2, dst)
                     const roundsHtml = player.rounds.map((pts, i) => `
-                        <div class="flex flex-col items-center justify-center bg-slate-950/80 border border-slate-700/60 rounded-lg px-3 py-1.5 min-w-[3.5rem] flex-shrink-0 snap-center">
-                            <span class="text-[9px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">R${i + 1}</span>
-                            <span class="text-sm font-bold text-slate-200">${pts}</span>
+                        <div class="flex flex-col items-center flex-shrink-0 w-12">
+                            <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider mb-1">[R${i + 1}]</span>
+                            <span class="text-sm font-bold text-slate-100">${pts}</span>
                         </div>
                     `).join('');
 
-                    // 4. Membuat Card Utama untuk Player
-                    const delay = index * 100; // Efek muncul bergantian
+                    // Buat Elemen Card
                     const card = document.createElement('div');
-                    
-                    card.className = `bg-[#0f172a]/90 backdrop-blur-xl border border-slate-800 rounded-2xl p-4 md:p-5 shadow-xl hover:border-cyan-500/50 transition-all duration-300 animate-card`;
-                    card.style.animationDelay = `${delay}ms`;
+                    card.className = `bg-[#0a0a0a] border border-slate-800 rounded-xl p-4 shadow-xl animate-card`;
+                    card.style.animationDelay = `${index * 80}ms`;
 
+                    // Struktur Layout Flexbox Presisi
                     card.innerHTML = `
-                        <!-- Bagian Atas: Rank, Nama & Total Point -->
-                        <div class="flex justify-between items-start mb-4">
-                            <!-- Info User -->
-                            <div class="flex items-center gap-3 max-w-[65%]">
-                                <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-600 to-emerald-500 flex items-center justify-center font-black text-white text-sm shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                                    #${index + 1}
-                                </div>
-                                <h2 class="text-base md:text-lg font-bold text-slate-100 truncate">${player.username}</h2>
+                        <!-- BARIS 1: Rank & Total Point -->
+                        <div class="flex justify-between items-end mb-1">
+                            <div class="text-lg font-bold text-white tracking-wide">
+                                ${medal} <span class="text-slate-400">#${rankNum}</span>
                             </div>
-                            
-                            <!-- Total Point Highlight -->
-                            <div class="text-right flex-shrink-0">
-                                <p class="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Total</p>
-                                <div class="flex items-baseline gap-1">
-                                    <span class="text-2xl md:text-3xl font-black text-white tracking-tight">${totalPoints}</span>
-                                    <span class="text-[10px] font-semibold text-emerald-500">PT</span>
-                                </div>
+                            <div class="text-2xl font-black text-white tracking-tight leading-none">
+                                ${formatNumber(player.totalPoints)}
                             </div>
                         </div>
 
-                        <!-- Bagian Tengah: Riwayat Ronde (Scrollable) -->
+                        <!-- BARIS 2: Username & Label PT -->
+                        <div class="flex justify-between items-start mb-5">
+                            <div class="text-sm font-medium text-slate-400 ml-1 truncate max-w-[70%]">
+                                ${player.username}
+                            </div>
+                            <div class="text-[10px] font-bold text-emerald-500 tracking-widest mt-0.5">
+                                PT
+                            </div>
+                        </div>
+
+                        <!-- SECTION: Rounds -->
                         <div class="mb-4">
-                            <p class="text-[10px] font-semibold text-slate-400 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                                <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                                Detail Ronde
-                            </p>
-                            <!-- List Box Ronde (Bisa di-swipe ke samping) -->
-                            <div class="flex overflow-x-auto snap-x gap-2 pb-1 hide-scroll">
+                            <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS</p>
+                            <!-- Horizontal Scroll List -->
+                            <div class="flex gap-2 overflow-x-auto hide-scroll snap-x pb-2">
                                 ${roundsHtml}
+                                <!-- Tambahan Panah jika data panjang -->
+                                ${player.rounds.length > 5 ? `<div class="flex items-center text-slate-600 text-sm ml-2">→</div>` : ''}
                             </div>
                         </div>
 
-                        <!-- Bagian Bawah: Reward Estimasi -->
-                        <div class="bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/20 rounded-xl p-3 flex items-center justify-between">
-                            <div>
-                                <p class="text-[9px] font-bold text-amber-500/80 uppercase tracking-widest mb-0.5">Reward</p>
-                                <p class="text-lg md:text-xl font-black text-amber-400 drop-shadow-md">${formatRupiah(totalReward)}</p>
-                            </div>
-                            <!-- Logo Reward -->
-                            <div class="relative w-10 h-10 flex-shrink-0">
-                                <div class="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30"></div>
+                        <!-- GARIS PEMISAH -->
+                        <hr class="border-slate-800 mb-3">
+
+                        <!-- SECTION: Reward -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold tracking-widest text-slate-400">REWARD</span>
+                            <div class="flex items-center gap-3">
+                                <span class="font-black text-amber-400 text-lg tracking-wide">${formatRupiah(player.totalReward)}</span>
                                 <img src="https://www.image2url.com/r2/default/images/1786552576749-6570b46a-b8a5-4cfe-859c-b36e5f687885.jpg" 
-                                     alt="Reward Coin" 
-                                     class="relative w-full h-full rounded-full object-cover border-2 border-amber-500/80 shadow-lg">
+                                     alt="Logo" 
+                                     class="w-6 h-6 rounded-full object-cover border border-amber-500/50">
                             </div>
                         </div>
                     `;
@@ -180,10 +202,9 @@
             })
             .catch(error => {
                 document.getElementById('player-list').innerHTML = `
-                    <div class="col-span-full bg-red-950/40 border border-red-500/30 text-red-200 p-5 rounded-2xl text-center backdrop-blur-sm">
-                        <svg class="w-10 h-10 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <p class="font-bold text-base">Gagal Memuat Data JSON</p>
-                        <p class="text-xs opacity-70 mt-1">Pastikan file <b>data.json</b> ada di direktori yang sama.</p>
+                    <div class="bg-red-950/20 border border-red-900/50 text-red-400 p-4 rounded-xl text-center">
+                        <p class="text-sm font-bold tracking-wider mb-1">GAGAL MENGAMBIL DATA</p>
+                        <p class="text-[10px] opacity-70">Sistem tidak dapat mendeteksi file data.json</p>
                     </div>
                 `;
             });
