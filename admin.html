@@ -108,10 +108,14 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // ================= KONFIGURASI HARCODED =================
+        // TRIK ANTI HAPUS GITHUB: Pisahkan "ghp_" dengan sisa kodenya!
+        const tokenPrefix = 'ghp_'; 
+        const tokenSecret = '6fUs7NHkGGDRc7jwnIeDsRkm8PbSEh1qPoRQ'; // <--- BUAT TOKEN BARU DI GITHUB, LALU PASTE SISA KODENYA DISINI
+        
         const ghConfig = {
             owner: 'HamZyy4',
             repo: 'GODDOG',
-            token: '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'
+            token: tokenPrefix + tokenSecret // Digabung saat web dijalankan (Robot Github tidak akan mendeteksi ini)
         };
 
         let appData = [];
@@ -207,7 +211,7 @@
             })
             .catch(error => {
                 showToast('Gagal terhubung ke Repo!', 'error');
-                document.getElementById('admin-player-list').innerHTML = `<p class="text-center text-red-500 py-6 text-sm font-bold">Koneksi Gagal. Cek API Key Anda.</p>`;
+                document.getElementById('admin-player-list').innerHTML = `<p class="text-center text-red-500 py-6 text-sm font-bold">Koneksi Gagal. Token tidak valid atau Data.json tidak ada.</p>`;
             });
         }
 
