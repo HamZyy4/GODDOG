@@ -63,7 +63,6 @@
         <div class="border-b-2 border-slate-800 pb-3 mb-5 flex justify-between items-end">
             <div>
                 <h2 class="text-lg font-bold tracking-widest text-slate-200">LEADERBOARD</h2>
-                <!-- UI TOTAL REWARD GLOBAL DI SINI -->
                 <p id="global-reward" class="text-[11px] font-bold text-amber-500 tracking-widest mt-1">TOTAL PAYOUT: MENGHITUNG...</p>
             </div>
             <span id="player-count" class="text-xs font-bold text-slate-500 tracking-wider">MEMUAT...</span>
@@ -98,39 +97,37 @@
                 const countText = document.getElementById('player-count');
                 const globalRewardText = document.getElementById('global-reward');
                 
-                let globalTotalReward = 0; // Menyimpan total reward semua player
+                let globalTotalReward = 0; 
 
-                // Memproses data dengan logika pembulatan PER RONDE
+                // Proses Kalkulasi
                 let players = data.map(player => {
                     let totalRealPoints = 0;
+                    let totalRoundedPoints = 0; // Variabel baru untuk menyimpan total poin yang dibulatkan
                     let totalReward = 0;
 
-                    // Hitung poin tiap ronde secara spesifik
                     let processedRounds = player.rounds.map(pts => {
                         totalRealPoints += pts;
 
-                        // LOGIKA PEMBULATAN (Threshold 80)
                         let ratusan = Math.floor(pts / 100) * 100;
                         let sisa = pts % 100;
                         
-                        // Jika sisa >= 80, naikkan ke ratusan selanjutnya (cth: 180 -> 200)
+                        // Logika Pembulatan
                         let poinBulat = (sisa >= 80) ? (ratusan + 100) : ratusan;
                         
-                        // Konversi poin bulat ke reward (Rp5000 per 100 poin)
+                        totalRoundedPoints += poinBulat; // Tambahkan ke total poin bulat
+
                         let roundReward = (poinBulat / 100) * 5000;
-                        
                         totalReward += roundReward;
 
-                        return { real: pts, reward: roundReward };
+                        return { real: pts, bulat: poinBulat, reward: roundReward };
                     });
 
-                    // Tambahkan ke total keseluruhan global
                     globalTotalReward += totalReward;
 
-                    return { ...player, totalRealPoints, totalReward, processedRounds };
+                    return { ...player, totalRealPoints, totalRoundedPoints, totalReward, processedRounds };
                 });
 
-                // SORTING berdasarkan total hadiah (atau total poin asli)
+                // SORTING berdasarkan poin asli (Real Points)
                 players.sort((a, b) => b.totalRealPoints - a.totalRealPoints);
 
                 // Update UI Header
@@ -144,12 +141,13 @@
                     let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                     const rankNum = String(index + 1).padStart(2, '0');
 
-                    // UI Kotak Ronde menampilkan Poin & Reward (misal: 180 | 10k)
+                    // Tampilan detail ronde (Poin Asli | Pembulatan | Hadiah)
                     const roundsHtml = player.processedRounds.map((r, i) => `
-                        <div class="flex flex-col items-center flex-shrink-0 w-12">
+                        <div class="flex flex-col items-center flex-shrink-0 w-12 border border-slate-800 rounded">
                             <span class="bg-slate-800 text-slate-300 w-full text-center py-0.5 rounded-t text-[9px] font-bold tracking-wider">[R${i + 1}]</span>
-                            <span class="text-sm font-bold text-slate-100 py-1">${r.real}</span>
-                            <span class="bg-slate-900 w-full text-center text-[8px] font-bold text-emerald-400 py-0.5 rounded-b border-t border-slate-800">
+                            <span class="text-[13px] font-bold text-slate-100 pt-1 leading-none">${r.real}</span>
+                            <span class="text-[9px] font-bold text-cyan-500 pb-1">${r.bulat > 0 ? '(' + r.bulat + ')' : '(0)'}</span>
+                            <span class="bg-slate-900 w-full text-center text-[9px] font-bold text-emerald-400 py-0.5 rounded-b border-t border-slate-800">
                                 ${r.reward > 0 ? (r.reward / 1000) + 'k' : '0'}
                             </span>
                         </div>
@@ -160,29 +158,41 @@
                     card.style.animationDelay = `${index * 80}ms`;
 
                     card.innerHTML = `
-                        <!-- Rank & Total Point Asli -->
-                        <div class="flex justify-between items-end mb-1">
-                            <div class="text-lg font-bold text-white tracking-wide">
-                                ${medal} <span class="text-slate-400">#${rankNum}</span>
+                        <!-- BARIS 1: Rank, Username & Poin Asli -->
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center">
+                                <div class="text-lg font-bold text-white tracking-wide w-8">
+                                    ${medal}
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-500 mr-1">#${rankNum}</span>
+                                    <span class="text-sm font-medium text-slate-200">${player.username}</span>
+                                </div>
                             </div>
-                            <div class="text-2xl font-black text-white tracking-tight leading-none">
-                                ${formatNumber(player.totalRealPoints)}
+                            
+                            <div class="text-right">
+                                <div class="text-xl font-black text-white tracking-tight leading-none">
+                                    ${formatNumber(player.totalRealPoints)}
+                                </div>
+                                <div class="text-[9px] font-bold text-emerald-500 tracking-widest mt-1 uppercase">
+                                    PT REAL
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Username -->
-                        <div class="flex justify-between items-start mb-5">
-                            <div class="text-sm font-medium text-slate-400 ml-1 truncate max-w-[70%]">
-                                ${player.username}
+                        <!-- BARIS 2: Poin Bulat (UI BARU) -->
+                        <div class="flex justify-between items-center bg-slate-900/50 border border-slate-800/50 rounded-lg p-2 mb-4">
+                             <div class="text-[10px] font-bold text-cyan-500 tracking-widest uppercase">
+                                TOTAL PT BULAT
                             </div>
-                            <div class="text-[10px] font-bold text-emerald-500 tracking-widest mt-0.5">
-                                PT REAL
+                            <div class="text-base font-bold text-cyan-400">
+                                ${formatNumber(player.totalRoundedPoints)} <span class="text-[9px] font-semibold text-slate-500">PT</span>
                             </div>
                         </div>
 
-                        <!-- Rounds Details -->
+                        <!-- BARIS 3: Rounds Details -->
                         <div class="mb-4">
-                            <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS & REWARD</p>
+                            <p class="text-[9px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS DETAILS (REAL | ROUNDED | REWARD)</p>
                             <div class="flex gap-2 overflow-x-auto hide-scroll snap-x pb-2">
                                 ${roundsHtml}
                                 ${player.processedRounds.length > 5 ? `<div class="flex items-center text-slate-600 text-sm ml-2">→</div>` : ''}
@@ -191,7 +201,7 @@
 
                         <hr class="border-slate-800 mb-3">
 
-                        <!-- Final Reward -->
+                        <!-- BARIS 4: Final Reward -->
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold tracking-widest text-slate-400">TOTAL REWARD</span>
                             <div class="flex items-center gap-3">
@@ -209,7 +219,7 @@
                 document.getElementById('player-list').innerHTML = `
                     <div class="bg-red-950/20 border border-red-900/50 text-red-400 p-4 rounded-xl text-center">
                         <p class="text-sm font-bold tracking-wider mb-1">GAGAL MENGAMBIL DATA</p>
-                        <p class="text-[10px] opacity-70">Pastikan file data.json ada dan web dihosting (GitHub Pages).</p>
+                        <p class="text-[10px] opacity-70">Pastikan file data.json ada dan web dihosting.</p>
                     </div>
                 `;
             });
