@@ -18,8 +18,11 @@
             color: #f8fafc; 
         }
 
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Custom Scrollbar agar support banyak ronde dan bisa di-scroll dengan rapi */
+        .custom-scroll::-webkit-scrollbar { height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(71, 85, 105, 1); }
 
         @keyframes fadeUp {
             0% { opacity: 0; transform: translateY(15px) scale(0.98); }
@@ -57,10 +60,36 @@
     </header>
 
     <!-- KONTEN UTAMA -->
-    <main class="relative z-20 max-w-[600px] mx-auto px-4 sm:px-6">
+    <main class="relative z-20 max-w-[600px] mx-auto px-4 sm:px-6 mt-6">
         
-        <!-- Header Info & TOTAL REWARD GLOBAL -->
-        <div class="flex justify-between items-end pb-3 mb-6 mt-4 border-b border-slate-800">
+        <!-- UI INFO SYSTEM REWARD -->
+        <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-8 shadow-lg">
+            <div class="flex items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-xs font-bold text-cyan-400 tracking-widest uppercase">Info System Reward</h3>
+            </div>
+            <ul class="text-[11px] font-medium text-slate-300 space-y-2">
+                <li class="flex items-start gap-2">
+                    <span class="text-red-400 font-bold w-16 flex-shrink-0">PT < 100</span> 
+                    <span><span class="text-slate-500">→</span> Reward mutlak Rp 0.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-slate-100 font-bold w-16 flex-shrink-0">Akhiran 00-24</span> 
+                    <span><span class="text-slate-500">→</span> Dibulatkan ke bawah (Reward Normal).</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-amber-400 font-bold w-16 flex-shrink-0">Akhiran 25-79</span> 
+                    <span><span class="text-slate-500">→</span> Dibulatkan ke bawah + <span class="text-amber-400 font-bold bg-amber-500/10 px-1 rounded">Bonus 1K</span>.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-emerald-400 font-bold w-16 flex-shrink-0">Akhiran 80-99</span> 
+                    <span><span class="text-slate-500">→</span> Dibulatkan ke atas ke ratusan selanjutnya.</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Header Leaderboard & TOTAL REWARD GLOBAL -->
+        <div class="flex justify-between items-end pb-3 mb-6 border-b border-slate-800">
             <div>
                 <h2 class="text-xl font-black tracking-widest text-slate-100">LEADERBOARD</h2>
                 <div class="flex items-center gap-2 mt-1">
@@ -104,7 +133,7 @@
                 
                 let globalTotalReward = 0; 
 
-                // Proses Kalkulasi dengan Logika Buntut 1K
+                // Proses Kalkulasi dengan Aturan Poin < 100 dan Buntut 1K
                 let players = data.map(player => {
                     let totalRealPoints = 0;
                     let totalRoundedPoints = 0; 
@@ -120,20 +149,27 @@
                         let roundReward = 0;
                         let gotBonus = false;
 
-                        // LOGIKA BARU SESUAI PERMINTAAN
-                        if (sisa >= 80) {
-                            // 180+ -> Dibulatkan ke 200 (Normal Reward)
-                            poinBulat = ratusan + 100;
-                            roundReward = (poinBulat / 100) * 5000;
-                        } else if (sisa >= 25 && sisa <= 79) {
-                            // 125-179 -> Dibulatkan ke bawah, tapi DIBERIKAN BONUS 1K
-                            poinBulat = ratusan;
-                            roundReward = (poinBulat / 100) * 5000 + 1000;
-                            gotBonus = true; // Tandai untuk efek UI
+                        // LOGIKA SISTEM REWARD
+                        if (pts < 100) {
+                            // Mutlak 0 jika di bawah 100 (misal: 59, 80, 99)
+                            poinBulat = 0;
+                            roundReward = 0;
+                            gotBonus = false;
                         } else {
-                            // < 125 -> Dibulatkan ke bawah (Normal Reward)
-                            poinBulat = ratusan;
-                            roundReward = (poinBulat / 100) * 5000;
+                            if (sisa >= 80) {
+                                // 180+ -> Dibulatkan ke atas
+                                poinBulat = ratusan + 100;
+                                roundReward = (poinBulat / 100) * 5000;
+                            } else if (sisa >= 25 && sisa <= 79) {
+                                // 125-179 -> Dibulatkan ke bawah, BONUS 1K
+                                poinBulat = ratusan;
+                                roundReward = (poinBulat / 100) * 5000 + 1000;
+                                gotBonus = true; 
+                            } else {
+                                // 100-124 -> Dibulatkan ke bawah (Normal)
+                                poinBulat = ratusan;
+                                roundReward = (poinBulat / 100) * 5000;
+                            }
                         }
 
                         totalRoundedPoints += poinBulat;
@@ -147,7 +183,7 @@
                     return { ...player, totalRealPoints, totalRoundedPoints, totalReward, processedRounds };
                 });
 
-                // SORTING berdasarkan poin asli
+                // SORTING berdasarkan poin asli tertinggi
                 players.sort((a, b) => b.totalRealPoints - a.totalRealPoints);
 
                 // Update UI Header
@@ -158,10 +194,9 @@
 
                 // Render Kartu Player
                 players.forEach((player, index) => {
-                    let medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                     const rankNum = String(index + 1).padStart(2, '0');
 
-                    // UI Ronde: Berubah warna jadi EMAS jika dapat bonus buntut 1K
+                    // UI Ronde (Menggunakan custom scrollbar untuk list panjang)
                     const roundsHtml = player.processedRounds.map((r, i) => {
                         const boxBorder = r.gotBonus ? 'border-amber-500/40' : 'border-slate-800';
                         const headerBg = r.gotBonus ? 'bg-amber-500/10 text-amber-500' : 'bg-slate-800 text-slate-400';
@@ -181,16 +216,16 @@
                     }).join('');
 
                     const card = document.createElement('div');
-                    card.className = `bg-[#0a0a0a]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 md:p-5 shadow-2xl animate-card hover:border-slate-600 transition-colors`;
+                    card.className = `bg-[#0a0a0a]/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 md:p-5 shadow-2xl animate-card hover:border-slate-700 transition-colors`;
                     card.style.animationDelay = `${index * 80}ms`;
 
                     card.innerHTML = `
-                        <!-- BARIS 1: Header Card -->
+                        <!-- BARIS 1: Header Card (Tanpa Emoji/Medali) -->
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 shadow-inner">
-                                    <span class="text-lg">${medal}</span>
-                                    <span class="text-xs font-bold text-slate-400 ${medal ? 'ml-1' : ''}">#${rankNum}</span>
+                                <!-- Box Rank Minimalis -->
+                                <div class="w-10 h-10 rounded-xl bg-slate-900 flex flex-col items-center justify-center border border-slate-700 shadow-inner">
+                                    <span class="text-xs font-black text-slate-300 tracking-wider">#${rankNum}</span>
                                 </div>
                                 <div>
                                     <h3 class="text-base font-bold text-slate-100 truncate w-32 md:w-48">${player.username}</h3>
@@ -221,15 +256,14 @@
                             </div>
                         </div>
 
-                        <!-- BARIS 3: Rounds Details (Scrollable) -->
+                        <!-- BARIS 3: Rounds Details (Scrollable up to unlimited rounds) -->
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-[9px] font-bold text-slate-500 tracking-widest uppercase">RIWAYAT RONDE</p>
-                                <p class="text-[8px] font-bold text-amber-500/60 tracking-widest uppercase">*KOTAK EMAS = BONUS 1K</p>
                             </div>
-                            <div class="flex gap-2 overflow-x-auto hide-scroll snap-x pb-2">
+                            <!-- Menggunakan custom-scroll agar scrollbar tipis muncul saat ronde > 5 -->
+                            <div class="flex gap-2 overflow-x-auto custom-scroll snap-x pb-3">
                                 ${roundsHtml}
-                                ${player.processedRounds.length > 5 ? `<div class="flex items-center justify-center w-8 text-slate-600 text-sm flex-shrink-0">→</div>` : ''}
                             </div>
                         </div>
 
