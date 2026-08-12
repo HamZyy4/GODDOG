@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GODDOG - Admin Panel</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #f8fafc; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
+
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/90 backdrop-blur-md px-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 w-full max-w-sm shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/30">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-widest">GODDOG ADMIN</h1>
+                <p class="text-xs text-slate-400 mt-1">Sistem Manajemen JSON</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 tracking-widest mb-1">USERNAME</label>
+                    <input type="text" id="username" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors" placeholder="Masukkan Username" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 tracking-widest mb-1">PASSWORD</label>
+                    <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors" placeholder="Masukkan Password">
+                </div>
+                <p id="login-error" class="text-xs text-red-500 font-medium hidden">Username atau Password salah!</p>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-2.5 rounded-lg transition-colors mt-2">
+                    LOGIN SISTEM
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= ADMIN DASHBOARD ================= -->
+    <div id="dashboard-screen" class="hidden relative z-10 max-w-3xl mx-auto px-4 py-6 pb-24">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
+            <div>
+                <h2 class="text-2xl font-black tracking-widest text-white">PANEL KONTROL</h2>
+                <p class="text-xs font-bold text-cyan-500 tracking-wider">MODE EDITOR JSON</p>
+            </div>
+            <button onclick="downloadJSON()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                UNDUH DATA.JSON
+            </button>
+        </div>
+
+        <!-- Info Card -->
+        <div class="bg-cyan-950/20 border border-cyan-900/50 rounded-xl p-4 mb-6 text-sm text-slate-300">
+            <span class="font-bold text-cyan-400">INFO PENTING:</span> Karena web ini di-hosting secara statis, setelah Anda menambah poin/player, wajib klik tombol <span class="font-bold text-emerald-400">"UNDUH DATA.JSON"</span> lalu upload file tersebut ke GitHub Anda untuk menimpa file yang lama.
+        </div>
+
+        <!-- Add New Player -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-8">
+            <label class="block text-[10px] font-bold text-slate-400 tracking-widest mb-2">TAMBAH PLAYER BARU</label>
+            <div class="flex gap-2">
+                <input type="text" id="new-player-name" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" placeholder="Nama Player...">
+                <button onclick="addNewPlayer()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap">
+                    TAMBAH
+                </button>
+            </div>
+        </div>
+
+        <!-- Player List -->
+        <div class="mb-2">
+            <h3 class="text-sm font-bold tracking-widest text-slate-400 mb-3">DATA PLAYER SAAT INI</h3>
+        </div>
+        <div id="admin-player-list" class="flex flex-col gap-4">
+            <!-- Player cards will be injected here -->
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let appData = []; // Menyimpan data JSON secara lokal
+
+        // --- SISTEM LOGIN ---
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorText = document.getElementById('login-error');
+
+            if (user === 'AdmGod' && pass === 'GODDOG') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                initData(); // Mulai ambil data jika login berhasil
+            } else {
+                errorText.classList.remove('hidden');
+            }
+        });
+
+        // --- AMBIL DATA JSON ---
+        function initData() {
+            // Mencoba mengambil data dari data.json yang sudah ada di server
+            fetch('data.json?v=' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error("Gagal");
+                    return response.json();
+                })
+                .then(data => {
+                    appData = data;
+                    renderAdminUI();
+                })
+                .catch(error => {
+                    // Jika data.json belum ada, siapkan array kosong
+                    alert("File data.json belum ditemukan atau kosong. Mulai dengan data baru.");
+                    appData = [];
+                    renderAdminUI();
+                });
+        }
+
+        // --- RENDER UI ADMIN ---
+        function renderAdminUI() {
+            const container = document.getElementById('admin-player-list');
+            container.innerHTML = '';
+
+            if (appData.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 py-4 text-sm">Belum ada data player.</p>`;
+                return;
+            }
+
+            appData.forEach((player, playerIndex) => {
+                // Render List Ronde
+                const roundsHtml = player.rounds.map((pts, roundIndex) => `
+                    <div class="flex items-center gap-1 bg-slate-950 border border-slate-700 rounded-md px-2 py-1 relative group">
+                        <span class="text-[9px] font-bold text-slate-500">R${roundIndex + 1}:</span>
+                        <span class="text-sm font-black text-slate-200">${pts}</span>
+                        <!-- Tombol Hapus Ronde (Muncul saat dihover/diklik) -->
+                        <button onclick="removeRound(${playerIndex}, ${roundIndex})" class="ml-2 text-red-500 hover:text-red-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </button>
+                    </div>
+                `).join('');
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/80 border border-slate-800 rounded-xl p-4";
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-slate-100 text-lg">${player.username}</h3>
+                        <button onclick="deletePlayer(${playerIndex})" class="text-[10px] font-bold bg-red-950/50 text-red-400 border border-red-900/50 px-2 py-1 rounded hover:bg-red-900/50 transition-colors">
+                            HAPUS PLAYER
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-1.5">DATA RONDE:</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${roundsHtml || '<span class="text-xs text-slate-600">Belum ada poin ronde</span>'}
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-800">
+                        <input type="number" id="input-pts-${playerIndex}" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Poin">
+                        <button onclick="addRound(${playerIndex})" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold px-3 py-1 rounded-lg transition-colors text-xs whitespace-nowrap">
+                            + TAMBAH POIN
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- FUNGSI TAMBAH PLAYER ---
+        function addNewPlayer() {
+            const nameInput = document.getElementById('new-player-name');
+            const name = nameInput.value.trim();
+            if (name === '') return alert('Nama tidak boleh kosong!');
+            
+            // Cek duplikat
+            if (appData.find(p => p.username.toLowerCase() === name.toLowerCase())) {
+                return alert('Player dengan nama tersebut sudah ada!');
+            }
+
+            appData.push({ username: name, rounds: [] });
+            nameInput.value = ''; // Kosongkan input
+            renderAdminUI(); // Refresh UI
+        }
+
+        // --- FUNGSI HAPUS PLAYER ---
+        function deletePlayer(index) {
+            if(confirm(`Yakin ingin menghapus player ${appData[index].username}?`)) {
+                appData.splice(index, 1);
+                renderAdminUI();
+            }
+        }
+
+        // --- FUNGSI TAMBAH POIN RONDE ---
+        function addRound(playerIndex) {
+            const inputElement = document.getElementById(`input-pts-${playerIndex}`);
+            const pts = parseInt(inputElement.value);
+            
+            if (isNaN(pts)) return alert('Masukkan angka poin yang valid!');
+            if (pts < 0) return alert('Poin tidak boleh minus!');
+
+            appData[playerIndex].rounds.push(pts);
+            renderAdminUI();
+        }
+
+        // --- FUNGSI HAPUS POIN RONDE ---
+        function removeRound(playerIndex, roundIndex) {
+            if(confirm(`Hapus poin ronde ke-${roundIndex + 1} untuk ${appData[playerIndex].username}?`)) {
+                appData[playerIndex].rounds.splice(roundIndex, 1);
+                renderAdminUI();
+            }
+        }
+
+        // --- FUNGSI UNDUH (DOWNLOAD) JSON ---
+        function downloadJSON() {
+            // Ubah array appData menjadi format string JSON yang rapi
+            const dataStr = JSON.stringify(appData, null, 2);
+            
+            // Buat Blob (file virtual)
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            // Buat elemen link sementara untuk men-trigger download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'data.json'; // Nama file yang akan didownload
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Bersihkan memori
+
+            alert("File data.json berhasil diunduh! Silakan upload file tersebut ke Repository GitHub Anda untuk memperbarui Leaderboard.");
+        }
+    </script>
+</body>
+</html>
