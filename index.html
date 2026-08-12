@@ -45,7 +45,7 @@
             <div class="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/80 to-[#050505]"></div>
         </div>
         
-        <!-- Header Text (Sesuai Referensi) -->
+        <!-- Header Text -->
         <div class="relative z-10 text-center mt-6">
             <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest drop-shadow-lg">
                 GODDOG
@@ -99,8 +99,9 @@
             return new Intl.NumberFormat('id-ID').format(number);
         };
 
-        // Mengambil data dari data.json (menggunakan parameter tanggal agar tidak ter-cache di GitHub)
-        fetch('data.json?v=' + new Date().getTime())
+        // Mengambil data dari data.json
+        // (Catatan: Jika web sudah di-upload ke GitHub, Anda bisa ubah menjadi fetch('data.json?v=' + Date.now()) agar tidak kena cache)
+        fetch('data.json')
             .then(response => {
                 if (!response.ok) throw new Error("Gagal memuat data");
                 return response.json();
@@ -109,23 +110,23 @@
                 const container = document.getElementById('player-list');
                 const countText = document.getElementById('player-count');
                 
-                // Menghitung total poin setiap player dan memasukkannya ke dalam objek baru
+                // Menghitung total poin dan hadiah untuk setiap player
                 let players = data.map(player => {
                     const totalPoints = player.rounds.reduce((acc, curr) => acc + curr, 0);
                     const totalReward = Math.floor(totalPoints / 100) * 5000;
                     return { ...player, totalPoints, totalReward };
                 });
 
-                // SORTING: Mengurutkan player berdasarkan poin tertinggi ke terendah
+                // SORTING OTOMATIS: Dari Poin Tertinggi ke Terendah
                 players.sort((a, b) => b.totalPoints - a.totalPoints);
 
-                // Update jumlah player
+                // Update teks jumlah player
                 countText.innerText = `${players.length} PLAYERS`;
                 
-                // Kosongkan container dari loading icon
+                // Kosongkan loading icon
                 container.innerHTML = ''; 
 
-                // Render HTML per Player
+                // Render UI untuk setiap Player
                 players.forEach((player, index) => {
                     // Logika Medali untuk Top 3
                     let medal = '';
@@ -149,9 +150,9 @@
                     card.className = `bg-[#0a0a0a] border border-slate-800 rounded-xl p-4 shadow-xl animate-card`;
                     card.style.animationDelay = `${index * 80}ms`;
 
-                    // Struktur Layout Flexbox Presisi
+                    // Layout Flexbox untuk presisi text
                     card.innerHTML = `
-                        <!-- BARIS 1: Rank & Total Point -->
+                        <!-- Rank & Total Point -->
                         <div class="flex justify-between items-end mb-1">
                             <div class="text-lg font-bold text-white tracking-wide">
                                 ${medal} <span class="text-slate-400">#${rankNum}</span>
@@ -161,7 +162,7 @@
                             </div>
                         </div>
 
-                        <!-- BARIS 2: Username & Label PT -->
+                        <!-- Username & Label PT -->
                         <div class="flex justify-between items-start mb-5">
                             <div class="text-sm font-medium text-slate-400 ml-1 truncate max-w-[70%]">
                                 ${player.username}
@@ -171,21 +172,19 @@
                             </div>
                         </div>
 
-                        <!-- SECTION: Rounds -->
+                        <!-- Rounds Section -->
                         <div class="mb-4">
                             <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2">ROUNDS</p>
-                            <!-- Horizontal Scroll List -->
                             <div class="flex gap-2 overflow-x-auto hide-scroll snap-x pb-2">
                                 ${roundsHtml}
-                                <!-- Tambahan Panah jika data panjang -->
                                 ${player.rounds.length > 5 ? `<div class="flex items-center text-slate-600 text-sm ml-2">→</div>` : ''}
                             </div>
                         </div>
 
-                        <!-- GARIS PEMISAH -->
+                        <!-- Divider -->
                         <hr class="border-slate-800 mb-3">
 
-                        <!-- SECTION: Reward -->
+                        <!-- Reward Section -->
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-bold tracking-widest text-slate-400">REWARD</span>
                             <div class="flex items-center gap-3">
@@ -204,7 +203,7 @@
                 document.getElementById('player-list').innerHTML = `
                     <div class="bg-red-950/20 border border-red-900/50 text-red-400 p-4 rounded-xl text-center">
                         <p class="text-sm font-bold tracking-wider mb-1">GAGAL MENGAMBIL DATA</p>
-                        <p class="text-[10px] opacity-70">Sistem tidak dapat mendeteksi file data.json</p>
+                        <p class="text-[10px] opacity-70">Pastikan Anda tidak membuka file HTML ini secara offline (klik dua kali). Upload ke GitHub Pages atau gunakan VS Code Live Server.</p>
                     </div>
                 `;
             });
