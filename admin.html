@@ -2,346 +2,267 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GODDOG - Admin Panel API</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OVERRIDE // Forkt Community Security</title>
+    <!-- Font Space Mono untuk nuansa terminal modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #050505; color: #f8fafc; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Animasi untuk Notifikasi Toast */
-        @keyframes slideInRight {
-            0% { transform: translateX(100%); opacity: 0; }
-            100% { transform: translateX(0); opacity: 1; }
+        :root {
+            --bg-base: #050505;
+            --surface: #0a0a0c;
+            --border-dim: #1f2022;
+            --accent-cyan: #00ffcc;
+            --text-primary: #ffffff;
+            --text-secondary: #888c94;
         }
-        @keyframes fadeOutUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .toast-exit { animation: fadeOutUp 0.3s ease-in forwards; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(0, 255, 204, 0.05) 0%, transparent 60%);
+        }
+
+        /* Latar belakang titik-titik matriks */
+        .dot-matrix {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .terminal-window {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 720px;
+            background: var(--surface);
+            border: 1px solid var(--border-dim);
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Aksen garis cyan di atas */
+        .terminal-window::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .header-tag {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-tag::after {
+            content: '';
+            height: 1px;
+            flex-grow: 1;
+            background: var(--border-dim);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+            /* Text scramble class target */
+        }
+
+        .message-block {
+            border-left: 2px solid var(--accent-cyan);
+            padding-left: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .message-block p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-block p strong {
+            color: var(--text-primary);
+            font-weight: normal;
+        }
+
+        /* Grid Data Teknis Palsu */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            border-top: 1px dashed var(--border-dim);
+            padding-top: 2rem;
+        }
+
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .tech-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tech-value {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .terminal-window { padding: 2rem; }
+            h1 { font-size: 1.5rem; }
+            .tech-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
+<body>
 
-    <!-- Container untuk Notifikasi (Toast) -->
-    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none w-72"></div>
+    <div class="dot-matrix"></div>
 
-    <!-- ================= LOGIN SCREEN ================= -->
-    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-[#050505]/95 backdrop-blur-md px-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 w-full max-w-sm shadow-2xl">
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-                <h1 class="text-2xl font-black text-white tracking-widest">GODDOG ADMIN</h1>
-                <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">Sistem API Auto-Update</p>
+    <div class="terminal-window">
+        <div class="header-tag">
+            <span>SYS_OVERRIDE_ACTIVE</span>
+        </div>
+
+        <!-- Judul ini akan dianimasikan oleh JavaScript -->
+        <h1 id="scramble-text">FORKT COMMUNITY SECURITY</h1>
+
+        <div class="message-block">
+            <p><strong>[!] SYSTEM CONTROL COMPROMISED</strong></p>
+            <p>Akses administrasi root telah diambil alih. Protokol keamanan standar gagal menahan injeksi payload. Ini adalah peringatan audit pasif.</p>
+        </div>
+
+        <div class="tech-grid">
+            <div class="tech-item">
+                <span class="tech-label">Infiltration Vector</span>
+                <span class="tech-value">Zero-Day Bypass</span>
             </div>
-            
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <input type="text" id="username" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Username" autocomplete="off">
-                </div>
-                <div>
-                    <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="Password">
-                </div>
-                <p id="login-error" class="text-xs text-red-500 font-medium hidden text-center">Username atau Password salah!</p>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-2.5 rounded-lg transition-colors mt-2 shadow-[0_0_10px_rgba(245,158,11,0.2)]">
-                    LOGIN SISTEM
-                </button>
-            </form>
+            <div class="tech-item">
+                <span class="tech-label">Status</span>
+                <span class="tech-value" style="color: var(--accent-cyan);">FULLY COMPROMISED <span class="blink">_</span></span>
+            </div>
+            <div class="tech-item">
+                <span class="tech-label">Timestamp</span>
+                <span class="tech-value" id="timestamp"></span>
+            </div>
+            <div class="tech-item">
+                <span class="tech-label">Auditor</span>
+                <span class="tech-value">Forkt Node #01</span>
+            </div>
         </div>
     </div>
 
-    <!-- ================= ADMIN DASHBOARD ================= -->
-    <div id="dashboard-screen" class="hidden relative z-10 max-w-3xl mx-auto px-4 py-6 pb-24">
-        
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
-            <div>
-                <h2 class="text-2xl font-black tracking-widest text-white">PANEL KONTROL</h2>
-                <div class="flex items-center gap-2 mt-1 bg-slate-900/50 px-2 py-1 rounded-md border border-slate-800 inline-flex">
-                    <span id="api-status" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    <p id="api-status-text" class="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Menghubungkan...</p>
-                </div>
-            </div>
-            
-            <!-- Tombol Push to Github -->
-            <button id="btn-save-github" onclick="pushToGitHub()" class="bg-slate-800 text-slate-400 text-sm font-bold px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all opacity-50 cursor-not-allowed border border-slate-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                SIMPAN & UPDATE
-            </button>
-        </div>
-
-        <!-- Add New Player Panel -->
-        <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-2xl p-5 mb-8 shadow-lg relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
-            <label class="block text-[10px] font-bold text-cyan-400 tracking-widest mb-3 relative z-10 flex items-center gap-2">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                TAMBAH PLAYER BARU
-            </label>
-            <div class="flex gap-2 relative z-10">
-                <input type="text" id="new-player-name" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 shadow-inner" placeholder="Masukkan Nama Player...">
-                <button onclick="addNewPlayer()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all text-sm shadow-[0_0_10px_rgba(8,145,178,0.3)] whitespace-nowrap">
-                    TAMBAH
-                </button>
-            </div>
-        </div>
-
-        <!-- Player List -->
-        <div class="mb-3 flex justify-between items-end border-b border-slate-800 pb-2">
-            <h3 class="text-sm font-bold tracking-widest text-slate-400">DATA PLAYER SAAT INI</h3>
-            <span id="player-count-badge" class="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded">0 PLAYER</span>
-        </div>
-        
-        <div id="admin-player-list" class="flex flex-col gap-4">
-            <!-- Player cards will be injected here -->
-        </div>
-
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // ================= KONFIGURASI HARCODED =================
-        // TRIK ANTI HAPUS GITHUB: Pisahkan "ghp_" dengan sisa kodenya!
-        const tokenPrefix = 'ghp_'; 
-        const tokenSecret = '6fUs7NHkGGDRc7jwnIeDsRkm8PbSEh1qPoRQ'; // <--- BUAT TOKEN BARU DI GITHUB, LALU PASTE SISA KODENYA DISINI
-        
-        const ghConfig = {
-            owner: 'HamZyy4',
-            repo: 'GODDOG',
-            token: tokenPrefix + tokenSecret // Digabung saat web dijalankan (Robot Github tidak akan mendeteksi ini)
-        };
-
-        let appData = [];
-        let fileSha = ''; 
-
-        // --- SISTEM NOTIFIKASI TOAST ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            // Konfigurasi Warna berdasarkan tipe
-            let bgColor, borderColor, iconHtml;
-            if (type === 'success') {
-                bgColor = 'bg-emerald-950/80';
-                borderColor = 'border-emerald-500/50';
-                iconHtml = `<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            } else if (type === 'error') {
-                bgColor = 'bg-red-950/80';
-                borderColor = 'border-red-500/50';
-                iconHtml = `<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-            } else {
-                bgColor = 'bg-cyan-950/80';
-                borderColor = 'border-cyan-500/50';
-                iconHtml = `<svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        // --- 1. Animasi Text Scramble / Decrypt ---
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
             }
-
-            toast.className = `toast-enter flex items-center gap-3 ${bgColor} border ${borderColor} backdrop-blur-md rounded-xl p-3 shadow-lg`;
-            toast.innerHTML = `
-                ${iconHtml}
-                <p class="text-xs font-bold text-white tracking-wide">${message}</p>
-            `;
-            
-            container.appendChild(toast);
-
-            // Hapus otomatis setelah 3 detik
-            setTimeout(() => {
-                toast.classList.replace('toast-enter', 'toast-exit');
-                setTimeout(() => toast.remove(), 300); // Tunggu animasi exit selesai
-            }, 3000);
-        }
-
-        // --- SISTEM LOGIN ---
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            
-            if (user === 'AdmGod' && pass === 'GODDOG') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                showToast('Login Berhasil!', 'success');
-                checkGithubConnection(); // Otomatis jalan
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        });
-
-        // --- CEK KONEKSI & AMBIL DATA DARI GITHUB API ---
-        function checkGithubConnection() {
-            document.getElementById('admin-player-list').innerHTML = `<div class="text-center py-10"><div class="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div><p class="text-[10px] text-slate-400 font-bold tracking-widest">MENGUNDUH DATA JSON...</p></div>`;
-
-            fetch(`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/data.json`, {
-                headers: {
-                    'Authorization': `token ${ghConfig.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                },
-                cache: "no-store"
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("Gagal mengambil data dari GitHub.");
-                return response.json();
-            })
-            .then(data => {
-                fileSha = data.sha;
-                
-                // Decode Data Base64
-                const decodedData = decodeURIComponent(escape(atob(data.content)));
-                appData = JSON.parse(decodedData);
-                
-                // Update UI Status
-                document.getElementById('api-status').classList.replace('bg-red-500', 'bg-emerald-500');
-                document.getElementById('api-status').classList.remove('animate-pulse');
-                document.getElementById('api-status-text').innerText = "TERHUBUNG KE GITHUB";
-                document.getElementById('api-status-text').classList.replace('text-slate-400', 'text-emerald-400');
-                
-                // Aktifkan Tombol Simpan
-                const btnSave = document.getElementById('btn-save-github');
-                btnSave.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-800', 'text-slate-400', 'border-slate-700');
-                btnSave.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'text-white', 'shadow-[0_0_15px_rgba(16,185,129,0.3)]', 'border-emerald-500');
-                
-                showToast('Data JSON berhasil dimuat', 'info');
-                renderAdminUI();
-            })
-            .catch(error => {
-                showToast('Gagal terhubung ke Repo!', 'error');
-                document.getElementById('admin-player-list').innerHTML = `<p class="text-center text-red-500 py-6 text-sm font-bold">Koneksi Gagal. Token tidak valid atau Data.json tidak ada.</p>`;
-            });
-        }
-
-        // --- PUSH/UPDATE DATA KE GITHUB API ---
-        function pushToGitHub() {
-            if (!fileSha || !ghConfig.token) return;
-            
-            const btnSave = document.getElementById('btn-save-github');
-            btnSave.innerHTML = `<div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div> PROSES...`;
-            
-            const updatedJsonData = JSON.stringify(appData, null, 2);
-            const encodedData = btoa(unescape(encodeURIComponent(updatedJsonData)));
-
-            fetch(`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/data.json`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${ghConfig.token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: "Update Leaderboard Points",
-                    content: encodedData,
-                    sha: fileSha 
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.content && data.content.sha) {
-                    fileSha = data.content.sha; 
-                    showToast('Update Server Berhasil!', 'success');
-                } else {
-                    showToast('Gagal menyimpan data!', 'error');
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
                 }
-            })
-            .catch(error => showToast('Terjadi kesalahan jaringan', 'error'))
-            .finally(() => {
-                btnSave.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg> SIMPAN & UPDATE`;
-            });
-        }
-
-        // --- RENDER UI ADMIN ---
-        function renderAdminUI() {
-            const container = document.getElementById('admin-player-list');
-            document.getElementById('player-count-badge').innerText = `${appData.length} PLAYER`;
-            container.innerHTML = '';
-
-            appData.forEach((player, playerIndex) => {
-                const roundsHtml = player.rounds.map((pts, roundIndex) => `
-                    <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-1.5 group hover:border-red-500/50 transition-colors">
-                        <span class="text-[10px] font-bold text-slate-500">R${roundIndex + 1}:</span>
-                        <span class="text-sm font-black text-slate-200">${pts}</span>
-                        <button onclick="removeRound(${playerIndex}, ${roundIndex})" class="ml-1 text-slate-600 hover:text-red-500 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                `).join('');
-
-                const card = document.createElement('div');
-                card.className = "bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-2xl p-4 md:p-5 hover:border-slate-700 transition-colors";
-                
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-4 border-b border-slate-800/80 pb-3">
-                        <h3 class="font-black text-slate-100 text-lg tracking-wide">${player.username}</h3>
-                        <button onclick="deletePlayer(${playerIndex})" class="text-[10px] font-bold bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg hover:bg-red-900/60 transition-colors flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            HAPUS PLAYER
-                        </button>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <p class="text-[10px] font-bold text-slate-500 tracking-widest mb-2 uppercase">Riwayat Ronde:</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${roundsHtml || '<span class="text-[11px] font-medium text-slate-600 italic bg-slate-950 px-3 py-1 rounded-lg">Belum ada poin tercatat</span>'}
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2 mt-4 pt-4 border-t border-slate-800/80">
-                        <input type="number" id="input-pts-${playerIndex}" class="w-24 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-emerald-500 text-center" placeholder="Poin">
-                        <button onclick="addRound(${playerIndex})" class="bg-emerald-900/30 hover:bg-emerald-800/50 text-emerald-400 border border-emerald-800 font-bold px-4 py-2 rounded-xl transition-colors text-xs tracking-wider flex-1 md:flex-none">
-                            + TAMBAH POIN
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // --- FUNGSI AKSI ADMIN ---
-        function addNewPlayer() {
-            const nameInput = document.getElementById('new-player-name');
-            const name = nameInput.value.trim();
-            if (name === '') return showToast('Nama tidak boleh kosong!', 'error');
-            if (appData.find(p => p.username.toLowerCase() === name.toLowerCase())) return showToast('Player sudah ada!', 'error');
-            
-            appData.push({ username: name, rounds: [] });
-            nameInput.value = ''; 
-            renderAdminUI(); 
-            showToast(`Player ${name} ditambahkan`, 'success');
-        }
-
-        function deletePlayer(index) {
-            const name = appData[index].username;
-            if(confirm(`Yakin ingin menghapus ${name} secara permanen?`)) {
-                appData.splice(index, 1);
-                renderAdminUI();
-                showToast(`Player ${name} dihapus`, 'error');
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span style="color: var(--text-secondary); opacity: 0.7;">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
             }
         }
 
-        function addRound(playerIndex) {
-            const inputElement = document.getElementById(`input-pts-${playerIndex}`);
-            const pts = parseInt(inputElement.value);
-            const name = appData[playerIndex].username;
-
-            if (isNaN(pts) || pts < 0) return showToast('Masukkan angka poin valid!', 'error');
+        // Menjalankan efek scramble saat web dimuat
+        window.onload = () => {
+            const el = document.getElementById('scramble-text');
+            const fx = new TextScramble(el);
             
-            appData[playerIndex].rounds.push(pts);
-            inputElement.value = '';
-            renderAdminUI();
-            showToast(`+${pts} Poin ditambahkan untuk ${name}`, 'success');
-        }
+            // Teks awal dikosongkan sebentar, lalu diubah ke teks asli
+            el.innerHTML = "";
+            setTimeout(() => {
+                fx.setText('FORKT COMMUNITY SECURITY');
+            }, 300);
 
-        function removeRound(playerIndex, roundIndex) {
-            if(confirm(`Hapus poin ronde ke-${roundIndex + 1}?`)) {
-                appData[playerIndex].rounds.splice(roundIndex, 1);
-                renderAdminUI();
-                showToast(`Poin Ronde Dihapus`, 'error');
-            }
-        }
+            // --- 2. Live Timestamp Generator ---
+            const dateObj = new Date();
+            const dateStr = dateObj.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+            document.getElementById('timestamp').innerText = dateStr;
+        };
     </script>
 </body>
 </html>
